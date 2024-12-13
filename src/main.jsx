@@ -14,12 +14,9 @@ createRoot(document.getElementById('root')).render(
   <Navbar />
      <Routes>
       <Route path="/" element={<App />} />
-    </Routes>
-    <Routes>
       <Route path="/Add-tag" element={<AddTag />} />
-    </Routes>
-    <Routes>
       <Route path="/Tags" element={<Tags />} />
     </Routes>
+    
   </BrowserRouter>
 )

@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { ToastContainer } from "react-toastify";
-// import {toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "../../Styles/FormStyles.css";
 import apiInstance from "../../Services/API/MyApi";
 import GenericForm from "../Form/GenericForm";
 import Loading from "../Loading/Loading";
-import { Link } from "react-router-dom";
 import { FaTrash, FaEdit } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 /**
  * Tags Component
@@ -26,6 +25,12 @@ function Tags() {
   // API URL for getting all tags (loaded from environment variables)
   const GetAllTags = import.meta.env.VITE_API_GETALL_TAGS_URL;
 
+  // API URL for updating a tag (loaded from environment variables)
+  const UpdateTagApi = import.meta.env.VITE_API_UPDATE_TAG_URL;
+
+  // API URL for Finding a tag (loaded from environment variables)
+  const FindTagApi = import.meta.env.VITE_API_FIND_TAG_URL;
+
   // State to store the name of the tag
   const [tagName, setTagName] = useState("");
 
@@ -41,13 +46,20 @@ function Tags() {
   // State to store fetched tags
   const [tags, setTags] = useState([]);
 
-  // Fetch tags when the component mounts or when the `refresh` state changes
+  // State to store closing and opening of modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // state to store the fetched tag from the database for updation
+  const [currentTag, setCurrentTag] = useState(null);
+
+  /**
+   * Fetch tags from the API when the component mounts or when the `refresh` state changes.
+   */
   useEffect(() => {
     const fetchTags = async () => {
       setLoading(true);
       try {
         const result = await apiInstance.GetAllApi(GetAllTags);
-        console.log("Fetched Tags:", result);
         setTags(result);
       } catch (error) {
         console.error("Error fetching tags:", error);
@@ -60,10 +72,61 @@ function Tags() {
   }, [refresh]);
 
   /**
-   * Handle the form submission.
+   * Handle opening the modal to update a tag.
+   *
+   * Fetches the details of the tag by ID and sets the current tag to be edited.
+   *
+   * @param {number} id - The ID of the tag to update.
+   */
+  const handleOpenModal = async (id) => {
+    try {
+      const result = await apiInstance.GetByIdApi(FindTagApi, id);
+      const mappedTag = {
+        id: result.id,
+        name: result.name,
+        displayName: result.displayName,
+      };
+      await setCurrentTag(mappedTag); // Ensure this is setting the current tag correctly
+      console.log("mapped tag:", mappedTag); // You already have this log
+      setIsModalOpen(true); // Ensure the modal is open after fetching the tag
+    } catch (error) {
+      console.error("Error fetching tag details:", error);
+    }
+  };
+
+  /**
+   * Updates the `currentTag` when it changes.
+   */
+  useEffect(() => {
+    if (currentTag) {
+      console.log("Updated current tag:", currentTag);
+    }
+  }, [currentTag]);
+
+  /**
+   * Handle the update operation for a tag.
+   *
+   * Sends the updated tag data to the API to update the tag and refreshes the tags list.
+   *
+   * @param {Object} updatedTag - The updated tag data.
+   */
+  const handleUpdate = async (updatedTag) => {
+    setLoading(true);
+    try {
+      await apiInstance.PutApi(UpdateTagApi, updatedTag.id, updatedTag);
+      setRefresh((prev) => !prev);
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error updating tag:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Handle the form submission to create a new tag.
    *
    * Sends the tag data to the API to create a new tag and resets the form fields.
-   * Displays a loading indicator while the API call is in progress.
    *
    * @param {Event} e - The form submit event.
    */
@@ -87,7 +150,7 @@ function Tags() {
   };
 
   /**
-   * Fields for the GenericForm component.
+   * Fields configuration for the GenericForm component.
    * Each field is configured with its properties like type, value, and onChange handler.
    */
   const fields = [
@@ -109,6 +172,13 @@ function Tags() {
     },
   ];
 
+  /**
+   * Handle the delete operation for a tag.
+   *
+   * Sends a request to the API to delete the tag and refreshes the tags list.
+   *
+   * @param {number} id - The ID of the tag to delete.
+   */
   async function handleDelete(id) {
     setLoading(true);
     try {
@@ -120,91 +190,163 @@ function Tags() {
     setLoading(false);
     setRefresh((prev) => !prev);
   }
-  //   const handleDelete=async(tagId)=>{
-  //     apiInstance.DeleteApi(DeleteTagApi,tagId)
-
-  //  }
   return (
     <>
-      {/* Toast notifications for success/error messages */}
-      <ToastContainer />
-
-      <div className="row">
-        {/* Show the Loading component when the `loading` state is true */}
-        <div className="col-md-12">{loading && <Loading />}</div>
-      </div>
-
-      <div className="container">
-        <div className="row pt-4">
-          {/* Form container */}
-          <div className="col-md-6 d-flex justify-content-center align-items-center">
-            <div className="p-4 form-container">
-              <GenericForm
-                title="Add new tag"
-                fields={fields}
-                onSubmit={handleSubmit}
-                buttonText="Create tag"
-              />
-            </div>
+    {/* Toast notifications for success/error messages */}
+    <ToastContainer />
+  
+    <div className="row">
+      {/* Show the Loading component when the `loading` state is true */}
+      <div className="col-md-12">{loading && <Loading />}</div>
+    </div>
+  
+    <div className="container">
+      <div className="row pt-4">
+        {/* Form container */}
+        <div className="col-md-6 d-flex justify-content-center align-items-center">
+          <div className="p-4 form-container">
+            {/* Render the GenericForm component for adding a new tag */}
+            <GenericForm
+              title="Add new tag"
+              fields={fields}  // Fields for the form
+              onSubmit={handleSubmit}  // Submit handler
+              buttonText="Create tag"  // Button text
+            />
           </div>
-          {/* table container */}
-          <div className="col-md-6 pt-4 d-flex justify-content-center align-items-center">
-            <div className="TableCss">
-              <div className="table-container">
-                <table className="table table-hover table-dark">
-                  <thead>
+        </div>
+        {/* Table container */}
+        <div className="col-md-6 pt-4 d-flex justify-content-center align-items-center">
+          <div className="TableCss">
+            <div className="table-container">
+              <table className="table table-hover table-dark">
+                <thead>
+                  <tr>
+                    {/* Table headers */}
+                    <th scope="col">#</th>
+                    <th scope="col">Tag Name</th>
+                    <th scope="col">Display Name</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tags.length > 0 ? (
+                    // Render each tag in the table if tags are available
+                    tags.map((tag, index) => (
+                      <tr key={tag.id}>
+                        <th scope="row" className="align-middle">
+                          {index + 1}
+                        </th>
+                        <td className="align-middle">{tag.name}</td>
+                        <td className="align-middle">{tag.displayName}</td>
+                        <td className="align-middle">
+                          <div className="d-inline-flex gap-2">
+                            {/* Button to open modal for updating the tag */}
+                            <button
+                              onClick={() => {
+                                handleOpenModal(tag.id);  // Open modal for editing
+                              }}
+                              className="btn btn-sm btn-dark update-btn"
+                            >
+                              <FaEdit />
+                            </button>
+                            {/* Button to delete the tag */}
+                            <button
+                              onClick={() => handleDelete(tag.id)}  // Call handleDelete for the tag
+                              className="btn btn-sm btn-dark delete-btn"
+                            >
+                              <FaTrash />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    // Display a message when no tags are available
                     <tr>
-                      <th scope="col">#</th>
-                      <th scope="col">Tag Name</th>
-                      <th scope="col">Display Name</th>
-                      <th scope="col">Actions</th>
+                      <td colSpan="4" className="text-center">
+                        <p className="text-warning">No tags added yet!</p>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-  {tags.length > 0 ? (
-    tags.map((tag, index) => (
-      <tr key={tag.id}>
-        <th scope="row" className="align-middle">
-          {index + 1}
-        </th>
-        <td className="align-middle">{tag.name}</td>
-        <td className="align-middle">{tag.displayName}</td>
-        <td className="align-middle">
-          <div className="d-inline-flex gap-2">
-            {/* Update Icon */}
-            <Link
-              to={`/update/${tag.name}`}
-              className="btn btn-sm btn-dark update-btn"
-            >
-              <FaEdit /> {/* Edit icon */}
-            </Link>
-            {/* Delete Icon */}
-            <Link
-              onClick={() => handleDelete(tag.id)}
-              className="btn btn-sm btn-dark delete-btn"
-            >
-              <FaTrash /> {/* Trash icon */}
-            </Link>
-          </div>
-        </td>
-      </tr>
-    ))
-  ) : (
-    <tr>
-      <td colSpan="4" className="text-center">
-        <p className="text-warning">No tags added yet!</p>
-      </td>
-    </tr>
-  )}
-</tbody>
-
-                </table>
-              </div>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
+  
+    {/* Modal for updating a tag */}
+    {isModalOpen && currentTag && (
+      <div
+        className="modal fade show"
+        tabIndex="-1"
+        aria-labelledby="modalLabel"
+        aria-hidden="true"
+        style={{
+          display: "block",
+          backdropFilter: "blur(5px)",  // Apply blur to the background
+          backgroundColor: "rgba(0, 0, 0, 0.5)",  // Darken the background behind the modal
+        }}
+      >
+        <div className="modal-dialog">
+          <div className="modal-content" style={{ backgroundColor: "#333" }}> {/* Darken modal content */}
+            <div className="modal-header">
+              <h5 className="modal-title text-white" id="modalLabel">
+                Update Tag
+              </h5>
+              {/* Close button for the modal */}
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+                onClick={() => setIsModalOpen(false)}  // Close the modal
+              ></button>
+            </div>
+            <div className="modal-body">
+              {/* Render the GenericForm component for updating a tag */}
+              <GenericForm
+                title="Update Tag"
+                fields={[
+                  {
+                    icon: "",
+                    type: "text",
+                    value: currentTag?.name || "",  // Set the current tag's name
+                    onChange: (value) =>
+                      setCurrentTag((prevState) => ({
+                        ...prevState,
+                        name: value,  // Update the name field in the current tag
+                      })),
+                    placeholder: "Enter tag Name",  // Placeholder for name field
+                    required: true,  // Make the field required
+                  },
+                  {
+                    icon: "",
+                    type: "text",
+                    value: currentTag?.displayName || "",  // Set the current tag's display name
+                    onChange: (value) =>
+                      setCurrentTag((prevState) => ({
+                        ...prevState,
+                        displayName: value,  // Update the displayName field in the current tag
+                      })),
+                    placeholder: "Enter Display Name",  // Placeholder for display name field
+                    required: true,  // Make the field required
+                  },
+                ]}
+                onSubmit={(e) => {
+                  e.preventDefault();  // Prevent form from reloading the page
+                  handleUpdate(currentTag);  // Pass the currentTag to handleUpdate
+                }}
+                buttonText="Update Tag"  // Button text
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+  </>
+  
   );
 }
 
