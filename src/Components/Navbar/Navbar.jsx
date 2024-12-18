@@ -2,12 +2,29 @@ import React from "react";
 import { Link } from "react-router";
 
 
+/*
+
+cont Button = (props) =>{
+return  <button
+        {...props}
+      >
+        <span className="navbar-toggler-icon"></span>
+      </button>
+
+  }
+
+ */
+
+
+
+// <Button onClick={()=>{}} className="navbar-toggler" sx={{}} type="button"   />
 const Navbar = () => {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark px-2 bg-dark">
       <Link className="navbar-brand" to="/">
         Blogosphere
       </Link>
+      {/* Button that click will toggle the navbar */}
       <button
         className="navbar-toggler"
         type="button"
@@ -23,6 +40,7 @@ const Navbar = () => {
       <div className="collapse navbar-collapse" id="navbarSupportedContent">
         <ul className="navbar-nav me-auto mb-2 mb-lg-0">
           <li className="nav-item">
+            {/*  */}
             <Link className="nav-link active" aria-current="page" to="/">
               Home
             </Link>
@@ -40,13 +58,14 @@ const Navbar = () => {
             </a>
             <ul className="dropdown-menu" aria-labelledby="navbarDropdown">
               <li>
-                <Link className="dropdown-item" to={"/Add-tag"} >
-                  Add Tag
-                </Link>
-              </li>
-              <li>
-                <Link className="dropdown-item" to={"/Tags"}>
+                <Link className="dropdown-item" to={"/adminFunctionality/Tags"}>
                   Admin Tags
+                </Link>
+                <Link className="dropdown-item" to={"/adminFunctionality/AddBlogPost"}>
+                  Add Blog Post
+                </Link>
+                <Link className="dropdown-item" to={"/adminFunctionality/AllBlogPosts"}>
+                  All Blog Posts
                 </Link>
               </li>
               <li>

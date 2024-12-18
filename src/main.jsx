@@ -4,9 +4,11 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { BrowserRouter, Routes, Route } from "react-router";
 import './index.css'
 import App from './App.jsx'
-import AddTag from './Components/AddTag/AddTag.jsx';
+
 import Navbar from './Components/Navbar/Navbar.jsx';
-import Tags from './Components/AddTag/Tags.jsx';
+import Tags from './Components/BlogTag/Tags.jsx';
+import AddBlogPost from './Components/BlogPost/AddBlogPost.jsx';
+import AllBlogPost from './Components/BlogPost/AllBlogPost.jsx';
 
 createRoot(document.getElementById('root')).render(
   
@@ -14,8 +16,10 @@ createRoot(document.getElementById('root')).render(
   <Navbar />
      <Routes>
       <Route path="/" element={<App />} />
-      <Route path="/Add-tag" element={<AddTag />} />
-      <Route path="/Tags" element={<Tags />} />
+      <Route path="/adminFunctionality/Tags" element={<Tags />} />
+      <Route path="/adminFunctionality/AddBlogPost" element={<AddBlogPost/>} />
+      <Route path="/adminFunctionality/AllBlogPosts" element={<AllBlogPost/>} />
+      
     </Routes>
     
   </BrowserRouter>

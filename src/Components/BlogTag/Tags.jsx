@@ -207,7 +207,7 @@ function Tags() {
           <div className="p-4 form-container">
             {/* Render the GenericForm component for adding a new tag */}
             <GenericForm
-              title="Add new tag"
+              title="Add new tag-Admin functionality"
               fields={fields}  // Fields for the form
               onSubmit={handleSubmit}  // Submit handler
               buttonText="Create tag"  // Button text

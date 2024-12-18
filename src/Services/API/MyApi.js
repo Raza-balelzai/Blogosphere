@@ -36,6 +36,7 @@ class myApi {
         toast.error(data.message, { autoClose: 2000 });
       }
     } catch (error) {
+      // return { success:false, data:"" }
       console.error("Error deleting tag:", error);
       toast.error("An unexpected error occurred.", { autoClose: 2000 });
     }
